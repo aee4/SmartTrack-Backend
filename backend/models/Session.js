@@ -48,4 +48,6 @@ const sessionSchema = new mongoose.Schema({
   },
 });
 
+sessionSchema.index({ lecturerId: 1 });
+
 module.exports = mongoose.model("Session", sessionSchema);

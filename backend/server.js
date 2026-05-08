@@ -1,7 +1,22 @@
+require("dotenv").config();
+
+const requiredEnvVars = [
+  "MONGO_URI",
+  "JWT_SECRET",
+  "CORS_ORIGIN",
+  "QR_EXPIRY_MINUTES",
+];
+
+requiredEnvVars.forEach((key) => {
+  if (!process.env[key]) {
+    console.error(`Missing required environment variable: ${key}`);
+    process.exit(1);
+  }
+});
+
 const http = require("http");
 const express = require("express");
 const cors = require("cors");
-const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const { Server } = require("socket.io");
 const authRoutes = require("./routes/auth");
@@ -9,12 +24,10 @@ const sessionRoutes = require("./routes/sessions");
 const attendanceRoutes = require("./routes/attendance");
 const initSocket = require("./socket/socketHandler");
 
-dotenv.config();
-
 const app = express();
 const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
-const corsOrigin = process.env.CORS_ORIGIN || "*";
+const corsOrigin = process.env.CORS_ORIGIN;
 
 app.use(
   cors({
@@ -40,13 +53,20 @@ app.set("io", io);
 initSocket(io);
 
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => {
     console.log("MongoDB connected successfully");
   })
   .catch((error) => {
     console.error("MongoDB connection failed:", error.message);
   });
+
+app.use((req, res) => {
+  res.status(404).json({ message: "Route not found" });
+});
 
 app.use((err, req, res, next) => {
   console.error(err.stack);

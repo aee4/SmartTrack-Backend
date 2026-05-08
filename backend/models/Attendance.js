@@ -34,4 +34,8 @@ const attendanceSchema = new mongoose.Schema({
   },
 });
 
+attendanceSchema.index({ sessionId: 1 });
+attendanceSchema.index({ deviceId: 1 });
+attendanceSchema.index({ sessionId: 1, deviceId: 1 }, { unique: true });
+
 module.exports = mongoose.model("Attendance", attendanceSchema);
