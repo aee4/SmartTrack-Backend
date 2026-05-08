@@ -1,6 +1,7 @@
 const Attendance = require("../models/Attendance");
 const Session = require("../models/Session");
 const User = require("../models/User");
+const { Parser } = require("json2csv");
 const { getDistanceMeters } = require("../utils/haversine");
 
 const submitAttendance = async (req, res) => {
@@ -129,9 +130,49 @@ const getAnalytics = async (req, res) => {
   }
 };
 
+const exportAttendance = async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    const attendance = await Attendance.find({ sessionId }).populate(
+      "studentId",
+      "name email"
+    );
+    const rows = attendance.map((record) => ({
+      studentName: record.studentId ? record.studentId.name : "",
+      studentEmail: record.studentId ? record.studentId.email : "",
+      status: record.status,
+      timestamp: record.timestamp,
+      latitude: record.latitude,
+      longitude: record.longitude,
+    }));
+    const parser = new Parser({
+      fields: [
+        { label: "Student Name", value: "studentName" },
+        { label: "Student Email", value: "studentEmail" },
+        { label: "Status", value: "status" },
+        { label: "Timestamp", value: "timestamp" },
+        { label: "Latitude", value: "latitude" },
+        { label: "Longitude", value: "longitude" },
+      ],
+    });
+    const csv = parser.parse(rows);
+
+    res.header("Content-Type", "text/csv");
+    res.header(
+      "Content-Disposition",
+      `attachment; filename="attendance_${sessionId}.csv"`
+    );
+
+    return res.send(csv);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   submitAttendance,
   getSessionAttendance,
   getMyAttendance,
   getAnalytics,
+  exportAttendance,
 };
