@@ -5,6 +5,7 @@ const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const { Server } = require("socket.io");
 const authRoutes = require("./routes/auth");
+const sessionRoutes = require("./routes/sessions");
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ app.use(
 );
 app.use(express.json());
 app.use("/api/auth", authRoutes);
+app.use("/api/sessions", sessionRoutes);
 
 const io = new Server(server, {
   cors: {
