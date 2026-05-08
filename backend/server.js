@@ -22,6 +22,9 @@ app.use(
   })
 );
 app.use(express.json());
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok", project: "SmartAttend" });
+});
 app.use("/api/auth", authRoutes);
 app.use("/api/sessions", sessionRoutes);
 app.use("/api/attendance", attendanceRoutes);
@@ -44,6 +47,11 @@ mongoose
   .catch((error) => {
     console.error("MongoDB connection failed:", error.message);
   });
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: "Internal server error" });
+});
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
