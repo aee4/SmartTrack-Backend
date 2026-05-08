@@ -55,6 +55,16 @@ const submitAttendance = async (req, res) => {
       latitude,
       longitude,
     });
+    const io = req.app.get("io");
+
+    io.to(sessionId).emit("attendance:update", {
+      studentName: req.user.name,
+      studentId: req.user.id,
+      status: attendance.status,
+      timestamp: attendance.timestamp,
+      latitude: attendance.latitude,
+      longitude: attendance.longitude,
+    });
 
     return res.status(201).json({ attendance, status });
   } catch (error) {
