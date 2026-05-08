@@ -7,6 +7,7 @@ const { Server } = require("socket.io");
 const authRoutes = require("./routes/auth");
 const sessionRoutes = require("./routes/sessions");
 const attendanceRoutes = require("./routes/attendance");
+const initSocket = require("./socket/socketHandler");
 
 dotenv.config();
 
@@ -27,11 +28,13 @@ app.use("/api/attendance", attendanceRoutes);
 
 const io = new Server(server, {
   cors: {
-    origin: corsOrigin,
+    origin: process.env.CORS_ORIGIN,
+    methods: ["GET", "POST"],
   },
 });
 
-console.log("Socket.IO ready");
+app.set("io", io);
+initSocket(io);
 
 mongoose
   .connect(process.env.MONGO_URI)
